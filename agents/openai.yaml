@@ -1,0 +1,6 @@
+interface:
+  display_name: "八字紫微 PDF 报告"
+  short_description: "生成隐私优先的八字紫微中文 PDF 人生主题报告"
+  default_prompt: "使用 $bazi-report-pdf-rheadesign 按八字+紫微综合流程生成一份完整详实的多语言 PDF 报告；先依据月令、透干、根气与制化判断当前命局实际格局，再将格局与身强身弱及每步十年大运交叉解释；每个模块标题使用总结型陈述句，直接概括本节结论，不使用问句或冒号。目标 8–10 页，内容需要时可到 20 页。"
+policy:
+  allow_implicit_invocation: true
