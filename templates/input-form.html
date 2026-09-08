@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaZi × Ziwei Report input</title>
+<style>
+  :root { --ink:#244A3C; --green:#2F5D50; --sage:#DDEBE4; --paper:#fbfcfb; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  main { max-width:720px; margin:40px auto; padding:0 22px 48px; }
+  h1 { letter-spacing:.04em; font-weight:600; margin-bottom:4px; }
+  .lead { color:var(--green); margin-top:0; }
+  form { background:#fff; border:1px solid var(--sage); border-radius:14px; padding:24px; box-shadow:0 8px 28px rgba(36,74,60,.08); }
+  label { display:block; margin-top:16px; font-weight:600; }
+  input, select { box-sizing:border-box; width:100%; padding:10px 12px; margin-top:6px; border:1px solid #b9cec4; border-radius:8px; font:inherit; color:var(--ink); background:#fff; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .inline { display:flex; flex-wrap:wrap; gap:18px; margin-top:8px; }
+  .inline label { margin:0; font-weight:400; }
+  .inline input { width:auto; margin-right:5px; }
+  button { margin-top:24px; padding:12px 18px; border:0; border-radius:8px; background:var(--green); color:#fff; font:600 16px inherit; cursor:pointer; }
+  button:hover { background:var(--ink); }
+  small { display:block; color:#587267; margin-top:18px; }
+  @media (max-width:560px) { .row { grid-template-columns:1fr; gap:0; } }
+</style>
+<main>
+  <h1>BaZi × Ziwei</h1>
+  <p class="lead">Report input form · 离线填写，不上传数据</p>
+  <form id="report-form">
+    <label>代号 / Subject code<input name="subject_code" required placeholder="例如 A01，不建议填真实姓名"></label>
+    <div class="row">
+      <label>出生年份<input name="year" type="number" min="1900" max="2100" required placeholder="YYYY"></label>
+      <label>出生月份<input name="month" type="number" min="1" max="12" required placeholder="MM"></label>
+    </div>
+    <div class="row">
+      <label>出生日期<input name="day" type="number" min="1" max="31" required placeholder="DD"></label>
+      <label>出生时间<input name="time" type="time" required></label>
+    </div>
+    <label>历法</label>
+    <div class="inline">
+      <label><input type="radio" name="calendar" value="solar" checked> 阳历 / Solar</label>
+      <label><input type="radio" name="calendar" value="lunar"> 阴历 / Lunar</label>
+      <label><input type="checkbox" name="leap_month"> 闰月 / Leap month</label>
+    </div>
+    <label>性别 / Gender<select name="gender" required><option value="">请选择</option><option value="male">男 / Male</option><option value="female">女 / Female</option></select></label>
+    <div class="row">
+      <label>出生地 / Birth place<input name="birth_place" required placeholder="城市或国家即可"></label>
+      <label>现居地 / Current location<input name="current_location" required placeholder="城市或国家即可"></label>
+    </div>
+    <div class="row">
+      <label>报告语言 / Language<select name="language"><option value="zh-CN">中文（简体）</option><option value="zh-TW">中文（繁体）</option><option value="en-US">English</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option><option value="fr-FR">Français</option><option value="de-DE">Deutsch</option><option value="es-ES">Español</option><option value="ar">العربية</option><option value="hi">हिन्दी</option></select></label>
+      <label>截至日期 / As of<input name="as_of_date" type="date" required></label>
+    </div>
+    <button type="submit">下载 input.json</button>
+    <small>生辰与地点只会写入你下载的本地文件。生成报告后，请按技能说明删除中间文件。</small>
+  </form>
+</main>
+<script>
+  const asOf = document.querySelector('[name="as_of_date"]');
+  asOf.value = new Date().toISOString().slice(0,10);
+  document.getElementById('report-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const f = new FormData(event.target);
+    const pad = value => String(value).padStart(2, '0');
+    const calendar = f.get('calendar');
+    const data = {
+      subject_code: f.get('subject_code').trim(),
+      language: f.get('language'), locale: f.get('language'), as_of_date: f.get('as_of_date'),
+      birth: {
+        calendar, date: `${f.get('year')}-${pad(f.get('month'))}-${pad(f.get('day'))}`,
+        time: f.get('time'), gender: f.get('gender'),
+        leap_month: calendar === 'lunar' && f.get('leap_month') === 'on',
+        place: f.get('birth_place').trim()
+      },
+      current_location: f.get('current_location').trim()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${data.subject_code || 'subject'}-input.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+</script>
+</html>
